@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: shield-service
+spec:
+  selector:
+    app: shield
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 8080
+      nodePort: 30007

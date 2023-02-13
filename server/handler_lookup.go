@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -19,8 +20,11 @@ var EtcdCli *clientv3.Client
 
 //init() runs to load the models one time during startup, instead of loading for every-request
 func init() {
+	var FileName string
+	flag.StringVar(&FileName, "filename", "", "The name and path of file.")
+	flag.Parse()
 	//In-memory malwareData. Load the data from a file
-	MalwareInMemoryDB = LoadMalwareDataInMemory("../malwaredata/blacklist.json")
+	MalwareInMemoryDB = LoadMalwareDataInMemory(FileName)
 	EtcdCli = ConnectToEtcd()
 }
 

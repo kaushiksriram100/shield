@@ -1,4 +1,4 @@
 clean:
-	rm -rf shield
+	rm -rf shieldapp
 shield: clean
-	go build -o bin/shield server/*.go
+	go build -o shieldapp server/*.go
