@@ -12,8 +12,8 @@ import (
 //TestLookUpMalwareDB performs unit tests.
 func TestLookUpMalwareDB(t *testing.T) {
 
-	testCase := "/urlinfo/1/google.com:8080/search?v=2&name=value"
-	expectedResponse := "{\"url\":\"google.com:8080/search\",\"blacklisted_query_strings\":{\"name\":\"value\",\"v\":\"2\"},\"is_malware_infected\":true}\n"
+	testCase := "/urlinfo/1/google.com:8080/search?v=2"
+	expectedResponse := "{\"url\":\"google.com:8080/search?v=2\",\"is_malware_infected\":true}\n"
 
 	router := httprouter.New()
 	router.Handle("GET", "/urlinfo/1/:hostname_with_port/*original_path", LookUpMalwareDB)
@@ -41,8 +41,8 @@ func TestLookUpMalwareDB(t *testing.T) {
 
 func TestLookupMalwareEtcD(t *testing.T) {
 
-	testCase := "/urlinfo/1/google.com:8080/search?v=2&name=value"
-	expectedResponse := "{\"url\":\"google.com:8080/search\",\"blacklisted_query_strings\":{\"name\":\"value\",\"v\":\"2\"},\"is_malware_infected\":true}\n"
+	testCase := "/urlinfo/1/google.com:8080/search?v=2"
+	expectedResponse := "{\"url\":\"google.com:8080/search?v=2\",\"is_malware_infected\":true}\n"
 
 	router := httprouter.New()
 	router.Handle("GET", "/urlinfo/1/:hostname_with_port/*original_path", LookupMalwareEtcD)
@@ -51,11 +51,9 @@ func TestLookupMalwareEtcD(t *testing.T) {
 	req, _ := http.NewRequest("GET", testCase, nil)
 	router.ServeHTTP(rr, req)
 
-	/*
-		t.Log(req.URL.Path)
-		t.Log(req.URL)
-		t.Log(rr.Code)
-	*/
+	//t.Log(req.URL.Path)
+	//t.Log(req.URL)
+	//t.Log(rr.Code)
 
 	//Verify Results
 	if rr.Code != 200 {
