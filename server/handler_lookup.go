@@ -48,7 +48,7 @@ func generateSearchKey(hostname_with_port, origin_path, raw_query string) string
 
 //MalwareLookup uses the url parameters to check against a in-memory data
 //Determines if the url is present in malware database.
-func LookUpMalwareDB(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func lookUpMalwareDB(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	var isHostBlacklisted bool
 	searchKey := generateSearchKey(params.ByName("hostname_with_port"), params.ByName("original_path"), r.URL.RawQuery)
 	if _, ok := MalwareInMemoryDB[searchKey]; ok {
@@ -59,7 +59,7 @@ func LookUpMalwareDB(w http.ResponseWriter, r *http.Request, params httprouter.P
 	fmt.Fprint(w, response)
 }
 
-func LookupMalwareEtcD(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func lookupMalwareEtcD(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	var isHostBlacklisted bool
 	searchKey := generateSearchKey(params.ByName("hostname_with_port"), params.ByName("original_path"), r.URL.RawQuery)
 	//Connect to ETCD
