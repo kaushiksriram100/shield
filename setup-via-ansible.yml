@@ -5,10 +5,10 @@
       shell: "kind create cluster --config kind-cluster-config.yml --name kind"
 
     - name: Build the docker image for Shield
-      shell: "docker build . -t shield:1.2.1"
+      shell: "docker build . -t shield:1.2.3"
 
     - name: Load docker image to kind cluster
-      shell: "kind load docker-image shield:1.2.1 --name kind"
+      shell: "kind load docker-image shield:1.2.3 --name kind"
 
     - name: Apply etcd backend
       shell: "helm install shield-etcd bitnami/etcd --set auth.rbac.create=false,readinessProbe.enabled=false,livenessProbe.enabled=false,startupProbe.enabled=false --namespace default"
