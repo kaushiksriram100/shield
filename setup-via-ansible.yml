@@ -1,0 +1,25 @@
+---
+- hosts: "{{ HOSTS | default('localhost') }}"
+  tasks:
+    - name: Create a kind cluster
+      shell: "kind create cluster --config kind-cluster-config.yml --name kind"
+
+    - name: Build the docker image for Shield
+      shell: "docker build . -t shield:1.2.1"
+
+    - name: Load docker image to kind cluster
+      shell: "kind load docker-image shield:1.2.1 --name kind"
+
+    - name: Apply etcd backend
+      shell: "helm install shield-etcd bitnami/etcd --set auth.rbac.create=false,readinessProbe.enabled=false,livenessProbe.enabled=false,startupProbe.enabled=false --namespace default"
+    - name: Apply the shield app
+      shell: "kubectl apply -f k8s_deployment_specs/shield.yml"
+      tags:
+        - always
+        - upgrade
+
+    - name: Apply the shield service
+      shell: "kubectl apply -f k8s_deployment_specs/shield-service.yml"
+      tags:
+        - always
+        - upgrade

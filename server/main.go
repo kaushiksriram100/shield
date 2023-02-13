@@ -13,7 +13,7 @@ func main() {
 	router := httprouter.New()
 
 	//routes
-	//router.GET("/urlinfo/1/:hostname_with_port/*original_path", LookUpMalwareDB)
+	//router.GET("/urlinfo/1/:hostname_with_port/*original_path", lookUpMalwareDB)
 	router.GET("/urlinfo/1/:hostname_with_port/*original_path", lookupMalwareEtcD)
 
 	//Start httpServer

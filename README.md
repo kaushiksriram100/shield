@@ -34,3 +34,19 @@ PASS
 ok  	shield/server	7.467s
 SRKAUSHI-M-8A2X:server srkaushi$ 
 ```
+
+## Packaging
+
+Kind Cluster:
+
+Pre-reqs:
+1. Docker running in local MAC
+2. `brew install kind`
+3. helm installed
+4. kubectl installed
+
+To deploy the full stack:
+`ansible-playbook setup-via-ansible.yml`
+
+To Upgrade only the shield App:
+`ansible-playbook setup-via-ansible.yml --tags [upgrade]`

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shieldapp-deployment
+  labels:
+    app: shield
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: shield
+  template:
+    metadata:
+      labels:
+        app: shield
+    spec:
+      containers:
+      - name: shield
+        image: shield:1.2.1
+        ports:
+        - containerPort: 8080
