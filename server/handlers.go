@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -20,14 +19,27 @@ var EtcdCli *clientv3.Client
 
 //init() runs to load the models one time during startup, instead of loading for every-request
 func init() {
-	var FileName string
-	flag.StringVar(&FileName, "filename", "", "The name and path of file.")
-	flag.Parse()
 	//In-memory malwareData. Load the data from a file
-	MalwareInMemoryDB = LoadMalwareDataInMemory(FileName)
+	MalwareInMemoryDB = LoadMalwareDataInMemory("./blacklist.json")
 	EtcdCli = ConnectToEtcd()
 }
 
+func generateAdminResponse(key string) string {
+	response := ShieldAdminResponse{}
+	response.Url = key
+	response.Status = "ok"
+
+	buf := &bytes.Buffer{}
+	enc := json.NewEncoder(buf)
+	enc.SetEscapeHTML(false)
+	err := enc.Encode(response)
+	if err != nil {
+		log.Printf("Error: %s", err.Error())
+	}
+	return buf.String()
+}
+
+//generateResponse generates a generic response to requestor
 func generateResponse(searchKey string, isHostBlacklisted bool) string {
 	response := ShieldResponse{}
 	response.Url = searchKey
@@ -42,6 +54,8 @@ func generateResponse(searchKey string, isHostBlacklisted bool) string {
 	}
 	return buf.String()
 }
+
+//generateSearchKey puts together various URL components together. boiler-plate
 func generateSearchKey(hostname_with_port, origin_path, raw_query string) string {
 	searchKey := hostname_with_port + origin_path
 	if len(raw_query) > 0 {
@@ -63,6 +77,7 @@ func lookUpMalwareDB(w http.ResponseWriter, r *http.Request, params httprouter.P
 	fmt.Fprint(w, response)
 }
 
+//lookupMalwareEtcD handler looks up the given key in etcd and return json response
 func lookupMalwareEtcD(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	var isHostBlacklisted bool
 	searchKey := generateSearchKey(params.ByName("hostname_with_port"), params.ByName("original_path"), r.URL.RawQuery)
@@ -80,4 +95,28 @@ func lookupMalwareEtcD(w http.ResponseWriter, r *http.Request, params httprouter
 	//Construct response to send to client
 	response := generateResponse(searchKey, isHostBlacklisted)
 	fmt.Fprint(w, response)
+}
+
+//putMalwareUrlToEtcD adds a key to the etcd.
+func putMalwareUrlToEtcD(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	putKey := generateSearchKey(params.ByName("hostname_with_port"), params.ByName("original_path"), r.URL.RawQuery)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	_, err := EtcdCli.Put(ctx, putKey, "default")
+	cancel()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Print(w, "Successfully Added Key")
+}
+
+//deleteMalwareUrlInEtcD handler delete the url key from etcd
+func deleteMalwareUrlInEtcD(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	delKey := generateSearchKey(params.ByName("hostname_with_port"), params.ByName("original_path"), r.URL.RawQuery)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	_, err := EtcdCli.Delete(ctx, delKey)
+	cancel()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Print(w, "Successfully Deleted Key")
 }

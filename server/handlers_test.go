@@ -68,6 +68,49 @@ func TestLookupMalwareEtcD(t *testing.T) {
 	}
 }
 
+func TestPutMalwareUrlToEtcD(t *testing.T) {
+
+	testCase := "/urlinfo/1/google.com:8080/search?v=3"
+
+	router := httprouter.New()
+	router.Handle("PUT", "/urlinfo/1/:hostname_with_port/*original_path", putMalwareUrlToEtcD)
+	rr := httptest.NewRecorder()
+
+	req, _ := http.NewRequest("PUT", testCase, nil)
+	router.ServeHTTP(rr, req)
+
+	//t.Log(req.URL.Path)
+	//t.Log(req.URL)
+	//t.Log(rr.Code)
+
+	//Verify Results
+	if rr.Code != 200 {
+		t.Error("Return Code does not match")
+	}
+}
+
+//TestDeleteMalwareUrlToEtcD tests for DELETE
+func TestDeleteMalwareUrlToEtcD(t *testing.T) {
+
+	testCase := "/urlinfo/1/google.com:8080/search?v=3"
+
+	router := httprouter.New()
+	router.Handle("DELETE", "/urlinfo/1/:hostname_with_port/*original_path", deleteMalwareUrlInEtcD)
+	rr := httptest.NewRecorder()
+
+	req, _ := http.NewRequest("DELETE", testCase, nil)
+	router.ServeHTTP(rr, req)
+
+	//t.Log(req.URL.Path)
+	//t.Log(req.URL)
+	//t.Log(rr.Code)
+
+	//Verify Results
+	if rr.Code != 200 {
+		t.Error("Return Code does not match")
+	}
+}
+
 //BenchmarkShieldServer to benchmark the http server
 func BenchmarkShieldServer(b *testing.B) {
 

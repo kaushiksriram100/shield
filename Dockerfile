@@ -17,7 +17,6 @@ FROM alpine:3.15
 WORKDIR /bin
 
 COPY --from=build /etc/shieldapp ./
-COPY --from=build /etc/malwaredata/blacklist.json ./
+COPY --from=build /etc/server/blacklist.json ./
 
 ENTRYPOINT ["/bin/shieldapp"]
-CMD ["-filename=./blacklist.json"]
