@@ -94,7 +94,7 @@ To Run Tests, create a etcd docker container (Do not use the above kubernetes po
 //start a etcd pod
 rm -rf /tmp/etcd-data.tmp && mkdir -p /tmp/etcd-data.tmp && docker rmi gcr.io/etcd-development/etcd:v3.5.0 || true && docker run -d -p 2379:2379 -p 2380:2380 --mount type=bind,source=/tmp/etcd-data.tmp,destination=/etcd-data --name etcd-gcr-v3.5.0 gcr.io/etcd-development/etcd:v3.5.0 /usr/local/bin/etcd --name s1 --data-dir /etcd-data --listen-client-urls http://0.0.0.0:2379 --advertise-client-urls http://0.0.0.0:2379 --listen-peer-urls http://0.0.0.0:2380 --initial-advertise-peer-urls http://0.0.0.0:2380 --initial-cluster s1=http://0.0.0.0:2380 --initial-cluster-token tkn --initial-cluster-state new --log-level info --logger zap --log-outputs stderr
 
-SRKAUSHI-M-8A2X:shield srkaushi$ go test -v server/*
+SRKAUSHI-M-8A2X:shield srkaushi$ cd server;go test -v
 2023/02/12 21:38:13 Info: Connection to ETCD Succeeded
 === RUN   TestLookUpMalwareDB
 --- PASS: TestLookUpMalwareDB (0.00s)
@@ -105,7 +105,7 @@ ok  	command-line-arguments	0.129s
 SRKAUSHI-M-8A2X:shield srkaushi$ 
 
 //After adding ETCD backend
-SRKAUSHI-M-8A2X:server srkaushi$ go test -v *
+SRKAUSHI-M-8A2X:server srkaushi$ go test -v 
 2023/02/13 13:18:37 Info: Connection to ETCD Succeeded
 === RUN   TestLookUpMalwareDB
 --- PASS: TestLookUpMalwareDB (0.00s)
