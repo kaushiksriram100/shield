@@ -6,9 +6,11 @@ nodes:
   extraPortMappings:
   - containerPort: 30007
     hostPort: 8080
+    listenAddress: 0.0.0.0
   - containerPort: 443
     hostPort: 8443
     protocol: TCP
   - containerPort: 30008
     hostPort: 8081
+    listenAddress: 0.0.0.0
 - role: worker
