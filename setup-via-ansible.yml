@@ -11,7 +11,7 @@
       shell: "kind load docker-image shield:1.2.3 --name kind"
 
     - name: Apply etcd backend
-      shell: "helm install shield-etcd bitnami/etcd --set auth.rbac.create=false,readinessProbe.enabled=false,livenessProbe.enabled=false,startupProbe.enabled=false --namespace default"
+      shell: "helm install shield-etcd bitnami/etcd --set replicaCount=3 --set auth.rbac.create=false,readinessProbe.enabled=false,livenessProbe.enabled=false,startupProbe.enabled=false --namespace default"
     - name: Apply the shield app
       shell: "kubectl apply -f k8s_deployment_specs/shield.yml"
       tags:

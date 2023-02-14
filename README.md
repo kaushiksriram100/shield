@@ -6,10 +6,10 @@ Shield tells if a url is blacklisted or not.
 `GET http://127.0.0.1:8080/urlinfo/1/google.com:8080/search-the-internet.html?v=thevalue`
 
 - Response JSON (after looking up malware DB). `is_malware_infected` field captures the result.
-`{"url":"google.com:8080/search?v=thevalue","is_malware_infected":false}`. false = Ok to proceed. true = STOP.
-- Add/Remove new blacklisting URL
+`{"url":"google.com:8080/search?v=thevalue","is_malware_infected":false}`. false = Ok to proceed. true = malware infected, stop.
+- Add/Remove new blacklisting URL (notice port number 8081 for PUT and DELETE)
     ```
-    //Notice port number = 8081 for PUT & DELETE
+    //Use port number = 8081 for PUT & DELETE (use 8080 for GET)
     PUT http://127.0.0.1:8081/urlinfo/1/google.com:8080/search?v=8
     DELETE http://127.0.0.1:8081/urlinfo/1/google.com:8080/search?v=8
     ```
@@ -17,8 +17,8 @@ Shield tells if a url is blacklisted or not.
 
 ## Setup Instructions
 ### Pre-requisites
-- MACBOOK+Docker environment. 
-- Docker engine is setup/running (https://docs.docker.com/desktop/install/mac-install/). verify with `docker ps` command.
+- Macbook+Docker environment.
+- Ensure Docker engine is setup/running (https://docs.docker.com/desktop/install/mac-install/). verify with `docker ps` command.
 - Install `kind` -> `brew install kind` & export to $PATH. May require sudo
 - Install `ansible` -> `brew install ansible`
 - Install `kubectl` depending on your MAC processor - https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/
@@ -29,48 +29,51 @@ SRKAUSHI-M-8A2X:shield srkaushi$ kind --version
 kind version 0.11.0
 SRKAUSHI-M-8A2X:shield srkaushi$ which kind
 /Users/srkaushi/go/bin/kind
-SRKAUSHI-M-8A2X:shield srkaushi$
 SRKAUSHI-M-8A2X:shield srkaushi$ which ansible
 /Users/srkaushi/Library/Python/3.9/bin/ansible
-SRKAUSHI-M-8A2X:shield srkaushi$ 
 SRKAUSHI-M-8A2X:shield srkaushi$ which kubectl
 /usr/local/bin/kubectl
-SRKAUSHI-M-8A2X:shield srkaushi$ 
 SRKAUSHI-M-8A2X:shield srkaushi$ which helm
 /usr/local/bin/helm
-SRKAUSHI-M-8A2X:shield srkaushi$ 
 ```
 - Ensure all the below are exported to $PATH
-`export $PATH=$PATH:<paths_above>`
+`export PATH=$PATH:<paths_above>`
 
-### Setup
+### Setup the Service (using ansible)
 ```
 git clone https://github.com/kaushiksriram100/shield.git
 cd shield
-docker system prune -a -f (optional - to ensure space is reclaimed)
+docker system prune -a -f (to ensure space is reclaimed, else may get disk issues)
 docker volume prune (optional - to ensure vol space is reclaimed)
-//setup the app
+
+//Setup the app (this builds and deploys the app and dependencies)
 ansible-playbook setup-via-ansible.yml  //may take 3-4 mins. 
+
+PLAY RECAP *************************************************************************************************************************************************************************************************
+localhost                  : ok=7    changed=6    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
 ```
 #### Verification and try it out!
-1. Ensure pods are running for atleast 2 mins (just to ensure no crashloops). 
+1. Ensure all pods are "running" for atleast 2 mins (just to ensure no crashloops). It may take 2-3 mins. 
 ```
 SRKAUSHI-M-8A2X:shield srkaushi$ kubectl get pods
 NAME                                   READY   STATUS    RESTARTS   AGE
-shield-etcd-0                          1/1     Running   0          2m44s
-shieldapp-deployment-5b4ddbd5c-8s52h   1/1     Running   0          2m43s
-shieldapp-deployment-5b4ddbd5c-xjtzj   1/1     Running   0          2m43s
-SRKAUSHI-M-8A2X:shield srkaushi$
+shield-etcd-0                          1/1     Running   0          8m19s
+shield-etcd-1                          1/1     Running   0          8m19s
+shield-etcd-2                          1/1     Running   0          8m19s
+shieldapp-deployment-5b4ddbd5c-9brhg   1/1     Running   0          8m18s
+shieldapp-deployment-5b4ddbd5c-c28kg   1/1     Running   0          8m18s
+shieldapp-deployment-5b4ddbd5c-zkt7b   1/1     Running   0          8m18s
 ```
-2. Wait for all pods to start (may take 1-2 mins). Once pods are running fine, then try this URL from a browser or POSTMAN
+2. Once pods are running fine, then try this URL from a browser or POSTMAN
 http://127.0.0.1:8080/urlinfo/1/google.com:8080/search?v=8
 
 response: {"url":"google.com:8080/search?v=8","is_malware_infected":false}
 
-3. To ensure the service is secure, admin operations like PUT new URL, DELETE URL are performed using another port (8081). 
+3. To ensure the service is secure, admin operations like PUT new URL, DELETE URL are performed using another port - 8081. 
 
 ###### Security
-4. Generally in additiona to secure services using SSL, admin port has to be also secured via approriate firewalls within the hosting platform. Like Network ACLs, private subnets in AWS. Access to admin port is restricted for internal access.
+4. Access to "admin port - 8081" is restricted for internal use-cases (updating/deleting URLs). This can be done via appropriate firewalls, network acls, private subnets in a cloud/on-prem environment. In addition, services are secured using TLS.
 
 ##### Admin Operations
 5. Add a new URL - PUT http://127.0.0.1:8081/urlinfo/1/google.com:8080/search?v=8  (Notice host-port = 8081) - Response 200
@@ -80,12 +83,12 @@ response: {"url":"google.com:8080/search?v=8","is_malware_infected":false}
 
 ##### Scale Up To Handle more load
 8. To scale up the services to handle more load beyond a single host. 
-   a). Increase replicas in this file (Line 8) `k8s_deployment_specs/shield.yml`
-   b). Run with tags - `ansible-playbook setup-via-ansible.yml --tags [upgrade]`
+   a). Increase shield service replicas in this file (Line 8) `k8s_deployment_specs/shield.yml`. Set to 5 for example. 
+   b). Run ansible with tags - `ansible-playbook setup-via-ansible.yml --tags [upgrade]`
    c) `kubectl get pods` -> Should show 3 pods.
-   d) These services are being a kubernetes native load balancer that will distribute requests to multiple pods (services). 
-   e) In real world, Kubernetes workers (in EC2) will be spread across multiple AZs and is resilient for fault. Our kind cluster model is just a emulation of a real production deployment. This service can scale up based on requests.
-   f) ETCD provides a highly consistent k,v database that can handle several transactions atomically at scale and compact keys.
+   d) Kubernetes native load balancer will distribute requests to multiple pods (services). 
+   e) In real world, Kubernetes workers (in EC2) will be spread across multiple AZs and is resilient for fault. Our kind cluster model is just a emulation of a real production deployment. This service can scale up based on requests and made 100% available.
+   f) ETCD provides a highly consistent k,v database that can handle several transactions atomically at scale and compact keys. ETCD in our case has 3 replicas & can be horizontally scaled up in real environments.
 
 ## Test Results
 Unit Tests:
