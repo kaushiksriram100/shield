@@ -108,7 +108,8 @@ func putMalwareUrlToEtcD(w http.ResponseWriter, r *http.Request, params httprout
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Print(w, "Successfully Added Key")
+	log.Printf("%s", "Info: Added Key")
+	fmt.Fprint(w, "Successfully Added Key")
 }
 
 //deleteMalwareUrlInEtcD handler delete the url key from etcd
