@@ -10,6 +10,9 @@
     - name: Load docker image to kind cluster
       shell: "kind load docker-image shield:1.3.0 --name kind"
 
+    - name: Add bitnami repo
+      shell: "helm repo add bitnami https://charts.bitnami.com/bitnami"
+
     - name: Apply etcd backend
       shell: "helm install shield-etcd bitnami/etcd --set replicaCount=3 --set auth.rbac.create=false,readinessProbe.enabled=false,livenessProbe.enabled=false,startupProbe.enabled=false --namespace default"
     - name: Apply the shield app
