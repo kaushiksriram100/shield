@@ -3,7 +3,7 @@ Shield tells if a url is blacklisted or not.
 
 ## TL;DR - How it works
 - Send Request via browser or POSTMAN (to check if a URL is present in malware DB):
-`GET http://localhost:8080/urlinfo/1/google.com:8080/search-the-internet.html?v=thevalue`
+`GET http://127.0.0.1:8080/urlinfo/1/google.com:8080/search-the-internet.html?v=thevalue`
 
 - Response JSON (after looking up malware DB). `is_malware_infected` field captures the result.
 `{"url":"google.com:8080/search?v=thevalue","is_malware_infected":false}`. false = Ok to proceed. true = STOP.
@@ -44,7 +44,7 @@ SRKAUSHI-M-8A2X:shield srkaushi$
 
 ### Setup
 ```
-git clone https://github.com/kaushiksriram100/shield.git`
+git clone https://github.com/kaushiksriram100/shield.git
 cd shield
 docker system prune -a -f (optional - to ensure space is reclaimed)
 docker volume prune (optional - to ensure vol space is reclaimed)
@@ -69,12 +69,13 @@ response: {"url":"google.com:8080/search?v=8","is_malware_infected":false}
 3. To ensure the service is secure, admin operations like PUT new URL, DELETE URL are performed using another port (8081). 
 
 ###### Security
-4. All endpoints are generally secured using SSL, admin port has to be also secured via approriate firewalls within the hosting platform. Like Network ACLs in AWS. Access to admin port is restricted for internal use case. 
+4. Generally in additiona to secure services using SSL, admin port has to be also secured via approriate firewalls within the hosting platform. Like Network ACLs, private subnets in AWS. Access to admin port is restricted for internal access.
 
 ##### Admin Operations
 5. Add a new URL - PUT http://127.0.0.1:8081/urlinfo/1/google.com:8080/search?v=8  (Notice host-port = 8081) - Response 200
 6. Check if URL is blacklisted - GET http://127.0.0.1:8080/urlinfo/1/google.com:8080/search?v=8 (Notice port = 8080) - Response JSON
-7. Remove a URL - DELETE http://127.0.0.1:8081/urlinfo/1/google.com:8080/search?v=8  (Notice port = 8081) - RESPONSE 200
+7. Remove a URL - DELETE http://127.0.0.1:8081/urlinfo/1/google.com:8080/search?v=8  (Notice port = 8081) - Response Code = 200 (If the url exists, it will be deleted)
+8. Updating & Deleting URLs can be requested in batches using a ordered queuing system. 
 
 ##### Scale Up
 8. To scale up the services to handle more load beyond a single host. 
