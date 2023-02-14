@@ -52,6 +52,8 @@ ansible-playbook setup-via-ansible.yml  //may take 3-4 mins.
 PLAY RECAP *************************************************************************************************************************************************************************************************
 localhost                  : ok=7    changed=6    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
 
+
+//Note: Docker image already published - docker pull registry.hub.docker.com/kaushik100/shield:1.3.0
 ```
 #### Verification and try it out!
 1. Ensure all pods are "running" for atleast 2 mins (just to ensure no crashloops). It may take 2-3 mins. 
