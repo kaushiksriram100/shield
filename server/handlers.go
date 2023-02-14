@@ -101,6 +101,8 @@ func lookupMalwareEtcD(w http.ResponseWriter, r *http.Request, params httprouter
 func putMalwareUrlToEtcD(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	putKey := generateSearchKey(params.ByName("hostname_with_port"), params.ByName("original_path"), r.URL.RawQuery)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+
+	//Multi-level lock is possible before PUT. [TBD]Need to reach ETCD specific API doc for lock/unlock for PUT
 	_, err := EtcdCli.Put(ctx, putKey, "default")
 	cancel()
 	if err != nil {

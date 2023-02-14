@@ -40,7 +40,8 @@ SRKAUSHI-M-8A2X:shield srkaushi$ which helm
 /usr/local/bin/helm
 SRKAUSHI-M-8A2X:shield srkaushi$ 
 ```
-- Ensure all the below are exported to $PATH (export $PATH=$PATH:<new_paths>)
+- Ensure all the below are exported to $PATH
+`export $PATH=$PATH:<paths_above>`
 
 ### Setup
 ```
@@ -77,13 +78,14 @@ response: {"url":"google.com:8080/search?v=8","is_malware_infected":false}
 7. Remove a URL - DELETE http://127.0.0.1:8081/urlinfo/1/google.com:8080/search?v=8  (Notice port = 8081) - Response Code = 200 (If the url exists, it will be deleted)
 8. Updating & Deleting URLs can be requested in batches using a ordered queuing system. 
 
-##### Scale Up
+##### Scale Up To Handle more load
 8. To scale up the services to handle more load beyond a single host. 
    a). Increase replicas in this file (Line 8) `k8s_deployment_specs/shield.yml`
    b). Run with tags - `ansible-playbook setup-via-ansible.yml --tags [upgrade]`
    c) `kubectl get pods` -> Should show 3 pods.
    d) These services are being a kubernetes native load balancer that will distribute requests to multiple pods (services). 
-   e) In real world, Kubernetes workers (in EC2) will be spread across multiple AZs and is resilient for fault. Our kind cluster model is just a emulation of a real production deployment. This service can scale up based on requests. 
+   e) In real world, Kubernetes workers (in EC2) will be spread across multiple AZs and is resilient for fault. Our kind cluster model is just a emulation of a real production deployment. This service can scale up based on requests.
+   f) ETCD provides a highly consistent k,v database that can handle several transactions atomically at scale and compact keys.
 
 ## Test Results
 Unit Tests:
