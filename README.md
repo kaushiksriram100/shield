@@ -16,16 +16,18 @@ Shield tells if a url is blacklisted or not.
 - Service Ports: 8080 & 8081 (more details below)
 
 ## Setup Instructions
-### Pre-requisites (one time setup - may need sudo and processor specific installations)
-- Macbook+Docker environment
+### Pre-requisites (one time setup - may need sudo and processor specific installations. Hence skipping in ansbile playbook for reviewers discretion)
+
+Macbook+Docker environment:
+```
 - Ensure Docker engine is setup/running (https://docs.docker.com/desktop/install/mac-install/). verify with `docker ps` command.
 - Install `kind` -> `brew install kind` & export to $PATH. May require sudo
 - Install `ansible` -> `brew install ansible`
 - Install `kubectl` depending on your MAC processor - https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/
 - Install `helm` -> `brew install helm`
+```
 
-For Ubuntu Machine (skipping baking this in Ansible playbook due to specific sudo requirement & leaving it to reviewers discretion to install)
-
+For Ubuntu Machine:
 ```
 //ansible
 sudo apt install ansible
