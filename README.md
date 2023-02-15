@@ -16,13 +16,47 @@ Shield tells if a url is blacklisted or not.
 - Service Ports: 8080 & 8081 (more details below)
 
 ## Setup Instructions
-### Pre-requisites
-- Macbook+Docker environment.
+### Pre-requisites (one time setup - may need sudo and processor specific installations)
+- Macbook+Docker environment
 - Ensure Docker engine is setup/running (https://docs.docker.com/desktop/install/mac-install/). verify with `docker ps` command.
 - Install `kind` -> `brew install kind` & export to $PATH. May require sudo
 - Install `ansible` -> `brew install ansible`
 - Install `kubectl` depending on your MAC processor - https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/
 - Install `helm` -> `brew install helm`
+
+For Ubuntu Machine (skipping baking this in Ansible playbook due to specific sudo requirement & leaving it to reviewers discretion to install)
+
+```
+//ansible
+sudo apt install ansible
+
+//Install kind
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.17.0/kind-linux-amd64
+ls -lrt
+echo $PATH
+cp -Rp kind /usr/local/bin/
+which kind
+
+//HELM
+wget https://get.helm.sh/helm-v3.9.3-linux-amd64.tar.gz
+tar xvf helm-v3.9.3-linux-amd64.tar.gz
+cp -Rp /home/srkaushi/linux-amd64/helm /usr/local/bin/
+
+//Docker
+sudo apt-get update
+sudo apt-get install ca-certificates curl gnupg lsb-release
+sudo mkdir -m 0755 -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+
+//kubectl
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod 755 kubectl 
+cp -Rp kubectl /usr/local/bin/
+```
+
+Ensure all pre-reqs are in PATH. 
 
 ```
 SRKAUSHI-M-8A2X:shield srkaushi$ kind --version
@@ -160,3 +194,11 @@ SRKAUSHI-M-8A2X:server srkaushi$
 ![PUT](https://github.com/kaushiksriram100/shield/tree/main/examples/Postman_PUT_example.png?raw=true)
 
 ![DELETE](https://github.com/kaushiksriram100/shield/tree/main/examples/Postman_Delete_example.png?raw=true)
+
+Added a concurrent GET client to send approx 1000 requests in parallel. Refer to examples/ folder & readme.md in there. 
+
+### Some Known Issues:
+Testing concurrent GET/PUT URLs(about ~1000) to the service as-is in a MAC+Docker results in some "connection_reset" issues. Upon debugging, this attributes to specific MAC/Docker internal networking bottlenecks. 
+
+Alternatively, deployed this service in ubuntu & tested around ~1100 concurrent requests and seems to be fine (refer examples/README.md)
+
