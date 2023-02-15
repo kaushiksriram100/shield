@@ -1,6 +1,6 @@
 ## Concurrent http requests for Shield
 
-go build -o client concurrent_get_requesst.go
+go build -o client concurrent_get_requests.go
 ./client -u http://172.31.132.168:8080/urlinfo/1/google.com:8080/search?v=2  (Default to 500 concurrent requests. pass -n 1000 for 1000 requests in parallel).
 
 ```

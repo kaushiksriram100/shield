@@ -1,3 +1,4 @@
+//This client program sends several GET requests to server in a concurrent way. User may add -n to specify the concurrency. 
 package main
 
 import (
