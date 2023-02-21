@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -17,11 +19,22 @@ import (
 var MalwareInMemoryDB MalwareDB
 var EtcdCli *clientv3.Client
 
+const (
+	DB_PREFIX = "urls/"
+)
+
 //init() runs to load the models one time during startup, instead of loading for every-request
 func init() {
 	//In-memory malwareData. Load the data from a file
 	MalwareInMemoryDB = LoadMalwareDataInMemory("./blacklist.json")
 	EtcdCli = ConnectToEtcd()
+}
+
+//encrypt the key.
+func encryptKey(key string) string {
+	hash := sha256.Sum256([]byte(key))
+	hashString := hex.EncodeToString(hash[:])
+	return hashString
 }
 
 func generateAdminResponse(key string) string {
@@ -83,7 +96,7 @@ func lookupMalwareEtcD(w http.ResponseWriter, r *http.Request, params httprouter
 	searchKey := generateSearchKey(params.ByName("hostname_with_port"), params.ByName("original_path"), r.URL.RawQuery)
 	//Connect to ETCD
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	resp, err := EtcdCli.Get(ctx, searchKey)
+	resp, err := EtcdCli.Get(ctx, DB_PREFIX+encryptKey(searchKey))
 	cancel()
 	if err != nil {
 		log.Fatal(err)
@@ -97,13 +110,13 @@ func lookupMalwareEtcD(w http.ResponseWriter, r *http.Request, params httprouter
 	fmt.Fprint(w, response)
 }
 
-//putMalwareUrlToEtcD adds a key to the etcd.
+//putMalwareUrlToEtcD adds an encrypted (sha256) key to the etcd.
 func putMalwareUrlToEtcD(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	putKey := generateSearchKey(params.ByName("hostname_with_port"), params.ByName("original_path"), r.URL.RawQuery)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 
 	//Multi-level lock is possible before PUT. [TBD]Need to reach ETCD specific API doc for lock/unlock for PUT
-	_, err := EtcdCli.Put(ctx, putKey, "default")
+	_, err := EtcdCli.Put(ctx, DB_PREFIX+encryptKey(putKey), "default")
 	cancel()
 	if err != nil {
 		log.Fatal(err)
@@ -118,7 +131,7 @@ func putMalwareUrlToEtcD(w http.ResponseWriter, r *http.Request, params httprout
 func deleteMalwareUrlInEtcD(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	delKey := generateSearchKey(params.ByName("hostname_with_port"), params.ByName("original_path"), r.URL.RawQuery)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	_, err := EtcdCli.Delete(ctx, delKey)
+	_, err := EtcdCli.Delete(ctx, DB_PREFIX+encryptKey(delKey))
 	cancel()
 	if err != nil {
 		log.Fatal(err)
