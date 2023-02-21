@@ -4,11 +4,11 @@
     - name: Create a kind cluster
       shell: "kind create cluster --config kind-cluster-config.yml --name kind"
 
-   # - name: Get the docker image
-   #   shell: "docker pull registry.hub.docker.com/kaushik100/shield:1.4.0"
+    - name: Get the docker image
+      shell: "docker pull registry.hub.docker.com/kaushik100/shield:1.4.0"
 
-    - name: Build the docker image for Shield
-      shell: "docker build . -t registry.hub.docker.com/kaushik100/shield:1.4.0"
+   # - name: Build the docker image for Shield
+   #   shell: "docker build . -t registry.hub.docker.com/kaushik100/shield:1.4.0"
 
     - name: Load docker image to kind cluster
       shell: "kind load docker-image registry.hub.docker.com/kaushik100/shield:1.4.0 --name kind"
