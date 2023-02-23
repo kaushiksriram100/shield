@@ -36,7 +36,7 @@ func main() {
 			}
 			defer resp.Body.Close()
 
-			fmt.Printf("Response status code from %s, %s: %d\n", *url, randomStr, resp.StatusCode)
+			fmt.Printf("Response status code from %s?v=%s %d\n", *url, randomStr, resp.StatusCode)
 			wg.Done()
 		}()
 	}
